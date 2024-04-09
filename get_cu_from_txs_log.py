@@ -1,7 +1,10 @@
 import os
+import traceback
+from collections import defaultdict
 
 from solana.rpc.api import Client, Pubkey
 from solders.signature import Signature
+from tqdm import tqdm
 import pandas as pd
 
 # List of tx
@@ -21,8 +24,8 @@ def extract_ix_cu(log):
 
 solana_client = Client(os.environ['RPC_URL'])
 
-res = {'ix': [], 'cu': []}
-for tx in txs:
+res = defaultdict(list)
+for tx in tqdm(txs):
     sig = Signature.from_string(tx)
     try:
         tx = solana_client.get_transaction(sig,'jsonParsed', max_supported_transaction_version=0)
@@ -30,9 +33,12 @@ for tx in txs:
 
         for x in extract_ix_cu(log):
             (ix, cu) = x
+            res['tx'] += [tx]
             res['ix'] += [ix]
             res['cu'] += [cu]
-    except Exception as e:
-        print("Error: ", e)
+    except:
+        traceback.print_exc()
 
 resf = pd.DataFrame.from_dict(res)
+resf['cu'] = resf['cu'].apply(int)
+resf.groupby('ix').max()
