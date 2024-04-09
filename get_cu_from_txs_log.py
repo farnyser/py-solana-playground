@@ -33,7 +33,7 @@ for tx in tqdm(txs):
 
         for x in extract_ix_cu(log):
             (ix, cu) = x
-            res['tx'] += [tx]
+            res['tx'] += [str(sig)]
             res['ix'] += [ix]
             res['cu'] += [cu]
     except:
@@ -41,4 +41,4 @@ for tx in tqdm(txs):
 
 resf = pd.DataFrame.from_dict(res)
 resf['cu'] = resf['cu'].apply(int)
-resf.groupby('ix').max()
+resf[['ix', 'cu']].groupby('ix').max()
